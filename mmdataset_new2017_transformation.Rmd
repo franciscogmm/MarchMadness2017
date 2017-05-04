@@ -1,0 +1,79 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(party)
+library(randomForest)
+library(caret)
+library(dplyr)
+library(ROCR)
+library(ggplot2)
+library(MLmetrics)
+```
+
+```{r}
+mmd <- read.csv('~/documents/fordham/March Madness 2017/2017data.csv', head = TRUE, sep = ",")
+mmd <-na.roughfix(mmd)
+#dropcols <- c('host_lat','host_long','host_site','team1_teamname','team1_lat','team1_long','team1_id','team1_score','team2_teamname','team2_lat','team2_long','team2_id','team2_score','season','team1_ap_preseason','team1_ap_final','team1_coaches_preseason','team1_coaches_before_final','team2_ap_preseason','team2_ap_final','team2_coaches_preseason','team2_coaches_before_final')
+#mmd<-mmd[,-which(names(mmd) %in% dropcols)]
+names(mmd)
+```
+
+```{r}
+newdata <- data.frame(game_id = mmd$id, season = mmd$season,team1_seed = mmd$team1_seed,team2_seed = mmd$team2_seed, team1_dist = mmd$dist1, team2_dist = mmd$dist2, team1_rpi = mmd$team1_rpi_rating, team2_rpi = mmd$team2_rpi_rating)
+#individual
+str(newdata)
+```
+
+```{r}
+#comparison
+newdata$div_seed <- mmd$team1_seed/mmd$team2_seed
+newdata$div_fg2pct <- mmd$team1_fg2pct/mmd$team2_fg2pct
+newdata$div_fg3pct <- mmd$team1_fg3pct/mmd$team2_fg3pct
+newdata$div_ftpct <- mmd$team1_ftpct/mmd$team2_ftpct
+newdata$div_blockpct <- mmd$team1_blockpct/mmd$team2_blockpct
+newdata$div_f3grate <- mmd$team1_fg3rate/mmd$team2_fg3rate
+str(newdata)
+```
+
+```{r}
+#newdata$div_oppfg2pct <- mmd$team1_oppfg2pct/mmd$team2_oppfg2pct
+#newdata$div_oppfg3pct <- mmd$team1_oppfg3pct/mmd$team2_oppfg3pct
+#newdata$div_oppftpct <- mmd$team1_oppftpct/mmd$team2_oppftpct
+#newdata$div_oppblockpct <- mmd$team1_oppblockpct/mmd$team2_oppblockpct
+
+#newdata$div_oppf3grate <- mmd$team1_oppf3grate/mmd$team2_oppf3grate
+newdata$div_arate <- mmd$team1_arate / mmd$team2_arate
+#newdata$div_opparate <- mmd$team1_opparate / mmd$team2_opparate
+newdata$div_stlrate <- mmd$team1_stlrate / mmd$team2_stlrate
+#newdata$div_oppstlrate <- mmd$team1_oppstlrate / mmd$team2_oppstlrate
+newdata$div_tempo <- mmd$team1_tempo / mmd$team2_tempo
+newdata$div_adjtempo <- mmd$team1_adjtempo / mmd$team2_adjtempo
+newdata$div_oe <- mmd$team1_oe / mmd$team2_oe
+newdata$div_adjoe <- mmd$team1_adjoe / mmd$team2_adjoe
+newdata$div_de <- mmd$team1_de / mmd$team2_de
+newdata$div_adjde <- mmd$team1_adjde / mmd$team2_adjde
+newdata$div_dist <- mmd$dist1 / mmd$dist2
+newdata$div_pt_team_season_wins <- mmd$team1_pt_team_season_wins / mmd$team2_pt_team_season_wins
+#newdata$div_pt_team_season_losses <- mmd$team1_pt_team_season_losses / mmd$team2_pt_team_season_losses
+newdata$div_rpi_rating <- as.numeric(mmd$team1_rpi_rating) / as.numeric(mmd$team2_rpi_rating)
+str(newdata)
+
+```
+
+```{r}
+#mmd2 <- read.csv('~/documents/fordham/March Madness 2017/div_variables.csv', head = TRUE, sep = ",")
+#names(mmd2)
+
+```
+
+```{r}
+#mmd3 <- data.frame(game_id = mmd2$game_id)
+#mmd3$log5_rpi <- mmd2$log5_rpi
+#mmd3$log5_efficiency <- mmd2$log5_efficiency
+#newdata <- merge(newdata,mmd3, by = c('game_id'), all.x = T)
+#str(newdata)                     
+write.csv(newdata, file = 'newdata2017.csv', na = "NA", row.names = FALSE)
+```

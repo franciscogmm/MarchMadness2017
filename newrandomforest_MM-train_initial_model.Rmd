@@ -1,0 +1,118 @@
+---
+title: "R Notebook"
+output:
+  html_document: default
+  html_notebook: default
+  pdf_document: default
+---
+
+```{r}
+library(party)
+library(randomForest)
+library(caret)
+library(dplyr)
+library(ROCR)
+library(ggplot2)
+library(MLmetrics)
+```
+
+```{r}
+#set.seed(1)
+mmd <- read.csv('~/documents/fordham/March Madness 2017/newdata-1.csv', head = TRUE, sep = ",")
+
+mmd <- na.roughfix(mmd)
+mmd$result <- as.factor(mmd$result)
+mmd$season <- as.factor(mmd$season)
+mmd$team1_rpi <- as.numeric(mmd$team1_rpi)
+mmd$team2_rpi <- as.numeric(mmd$team2_rpi)
+train <- subset(mmd, !(season == 2014 | season == 2015 | season == 2016))
+test <- subset(mmd, season == 2014 | season == 2015 | season == 2016)
+names(train)
+#unique(test$season)
+str(train)
+```
+
+```{r}
+
+extractFeatures <- function(data) {
+  varNames <- names(train)
+  varNames <- varNames[!varNames %in% c('result','game_id','season')]
+  selection <- data[,varNames]
+  #print (varNames)
+  return (selection)
+}
+mtryz <- tuneRF(extractFeatures(train),as.factor(train$result), ntreeTry=5000,stepFactor=1.5,improve=0.01, trace=TRUE, plot=TRUE)
+best.m <- mtryz[mtryz[, 2] == min(mtryz[, 2]), 1]
+
+rf <- randomForest(extractFeatures(train),as.factor(train$result), ntree = 5000, mtry = best.m, importance = T, do.trace = 100)
+print (rf)
+varImpPlot(rf, sort = T, main = "Variable Importance", n.var = 10)
+# p <- ggplot(featureImportance, aes(x = reorder(Feature, Importance), y = Importance)) +
+#   geom_bar(stat = 'identity', fill = "#53cfff") +
+#   coord_flip() +
+#   theme_light(base_size = 20) +
+#   xlab("") +
+#   ylab("Importance") +
+#   ggtitle("Predictor Importance\n") +
+#   theme(plot.title = element_text(size = 18))
+
+plot(rf)
+#print (p)
+
+```
+```{r}
+table <- importance(rf)
+table <- as.data.frame(table)
+table <- table[order(-table$MeanDecreaseAccuracy),]
+
+row.names(table)
+table$Variable <- row.names(table)
+table
+```
+
+```{r}
+#library(reprtree)
+
+#plot.getTree(rforest = rf,k=2)
+gettree <- getTree(rf, k = 2, labelVar = F)
+as.data.frame(gettree)
+#plot(gettree, type = 'simple')
+```
+
+```{r}
+names(rf)
+```
+
+```{r}
+submission <- data.frame(game_id = test$game_id)
+submission$result <- test$result
+submission$predicted <- predict(rf, extractFeatures(test))
+probs <- predict(rf, extractFeatures(test), type = 'prob')
+perf = prediction(probs[,2], test$result)
+auc = performance(perf, "auc")
+pred3 = performance(perf, "tpr","fpr")
+plot(pred3,main="ROC Curve for Random Forest",col=2,lwd=2)
+abline(a=0,b=1,lwd=2,lty=2,col="gray")
+
+confusionMatrix(data = submission$predicted,
+                reference = submission$result,
+                positive = "1")
+
+submission$prob <- probs[,2]
+print(submission)
+```
+
+```{r}
+submission$resultint <- as.integer(as.character(submission$result)) 
+submission$logloss <- -((submission$resultint*log(submission$prob))+((1-submission$resultint)*log(1-submission$prob)))
+
+#print (submission)
+
+mean(submission$logloss)
+plot(submission$prob,submission$logloss)
+
+submission[order(-submission$logloss),]
+#print (submission)
+```
+
+
