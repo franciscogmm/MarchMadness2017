@@ -3,6 +3,8 @@ Developed predictive models using R and Python to determine the winners of the N
 
 This project was done using R and Python, and the results were used as a submission to Deloitte’s March Madness Data Crunch Competition. Team members: Luo Yi, Yufei Long, and Yuyang Yue. Data set can't be shared due to limited permission from the organizer
 
+Also, I'm only uploading my code.
+
 ### Of the 64 teams that competed, we predicted Gonzaga University to win. Unfortunately, they lost to University of North Carolina.
 
 ## Data Transformation
