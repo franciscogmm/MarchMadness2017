@@ -5,7 +5,7 @@ This project was done using R and Python, and the results were used as a submiss
 
 Also, I'm only uploading my code.
 
-### Of the 64 teams that competed, we predicted Gonzaga University to win. Unfortunately, they lost to University of North Carolina.
+### Of the 64 teams that competed, we predicted Gonzaga University to win. Unfortunately, they lost to University of North Carolina in the finals.
 
 ## Data Transformation
 - The data that was used to train the initial model was from a data set that contained 2002-2016 team performance data, which included statistics, efficiency ratings, etc.,  from different sources. 
